@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetherium Pixel Odyssey</title>
+    <style>
+        :root {
+            --bg-pixel: #080612;
+            --panel-bg: #110d24;
+            --panel-border: #3b2d6e;
+            --gold: #fde047;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #7c3aed;
+            --accent-hover: #6d28d9;
+            --neon-pink: #ec4899;
+            --neon-blue: #38bdf8;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-pixel);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(124, 58, 237, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 12px;
+            display: flex;
+            height: 100vh;
+            box-sizing: border-box;
+            gap: 12px;
+            overflow: hidden;
+            user-select: none;
+            image-rendering: pixelated;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-pixel); }
+        ::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
+
+        .column {
+            background: var(--panel-bg);
+            border: 3px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 12px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 0 6px 0 rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Cookie Clicker Inspired Column Weights */
+        #left-col { flex: 1.1; text-align: center; align-items: center; justify-content: space-between; }
+        #mid-col { flex: 1.4; }
+        #right-col { flex: 1.5; }
+
+        h1, h2, h3 { 
+            color: var(--gold); 
+            margin-top: 0; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0px #000, 0 0 10px rgba(253, 224, 71, 0.3);
+        }
+
+        .section-box {
+            background: #06040d;
+            border: 2px solid var(--panel-border);
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 4px;
+        }
+
+        #realm-name {
+            font-size: 1.1rem;
+            color: var(--neon-pink);
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: underline dotted;
+            margin-bottom: 4px;
+        }
+        #realm-name:hover { color: var(--gold); }
+
+        #quanta-display { 
+            font-size: 2.2rem; 
+            font-weight: bold; 
+            color: var(--gold); 
+            text-shadow: 2px 2px 0px #000, 0 0 12px rgba(253, 224, 71, 0.4);
+            margin: 4px 0;
+        }
+        #cps-display { font-size: 0.95rem; color: var(--neon-blue); font-weight: bold; }
+
+        /* Pixel Harvest Button */
+        .clicker-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .pixel-harvest-btn {
+            background: radial-gradient(circle, #7c3aed 0%, #31104d 100%);
+            border: 4px solid #f472b6;
+            border-radius: 50%;
+            width: 190px;
+            height: 190px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5), inset 0 0 15px rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.05s, box-shadow 0.05s;
+        }
+        .pixel-harvest-btn:hover {
+            border-color: var(--gold);
+            transform: scale(1.03);
+            box-shadow: 0 0 30px rgba(253, 224, 71, 0.6);
+        }
+        .pixel-harvest-btn:active {
+            transform: scale(0.96);
+        }
+
+        .click-float {
+            position: absolute;
+            color: var(--gold);
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 0px #000;
+            pointer-events: none;
+            animation: floatUp 0.6s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+
+        /* High-Res Canvas Icons */
+        .pixel-icon {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #5b21b6;
+            background: #090514;
+            margin-right: 12px;
+            flex-shrink: 0;
+            image-rendering: pixelated;
+            border-radius: 4px;
+        }
+
+        .item-card {
+            background: #16102e;
+            border: 2px solid var(--panel-border);
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.5);
+            transition: border-color 0.2s, background 0.2s;
+            border-radius: 4px;
+        }
+        .item-card:hover { border-color: var(--neon-pink); background: #1c153b; }
+        .item-card.locked { opacity: 0.5; filter: grayscale(80%); }
+
+        button.action-btn {
+            background: var(--accent);
+            color: #fff;
+            border: 2px solid #c4b5fd;
+            padding: 6px 12px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #4c1d95;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            border-radius: 3px;
+        }
+        button.action-btn:hover { background: var(--accent-hover); border-color: var(--gold); }
+        button.action-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #4c1d95; }
+        button:disabled { background: #1a1528 !important; border-color: #2b233e !important; color: #475569 !important; box-shadow: none !important; cursor: not-allowed; }
+
+        .tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
+        .tab-btn { 
+            flex: 1; 
+            padding: 6px; 
+            background: #0c0819; 
+            color: var(--text-dim); 
+            border: 2px solid var(--panel-border); 
+            cursor: pointer; 
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            border-radius: 3px;
+        }
+        .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--gold); }
+        .tab-pane { display: none; flex: 1; overflow-y: auto; }
+        .tab-pane.active { display: flex; flex-direction: column; }
+
+        .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--panel-border); font-size: 0.85rem; }
+        .stat-label { color: var(--text-dim); }
+        .stat-value { font-weight: bold; color: var(--gold); }
+
+        /* Modal / Sidebar Guide Overlay */
+        #guide-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.85);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 4px solid var(--neon-pink);
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.4);
+            border-radius: 6px;
+        }
+        .guide-text { font-size: 0.85rem; color: var(--text-dim); line-height: 1.4; margin: 6px 0; }
+        .guide-text b { color: var(--neon-blue); }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT COLUMN: Cookie Clicker Main Harvest Area -->
+    <div class="column" id="left-col">
+        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <button class="action-btn" onclick="toggleGuide()" style="background: #2563eb; border-color: #93c5fd; box-shadow: 0 3px 0 #1e40af;">📖 Game Info</button>
+        </div>
+
+        <div class="section-box">
+            <div id="realm-name" onclick="renameRealm()">[ Click to Rename Realm ]</div>
+            <h2>Aether Core</h2>
+            <div id="quanta-display">0</div>
+            <div id="cps-display">CPS: 0.0</div>
+        </div>
+        
+        <div class="clicker-container">
+            <div class="pixel-harvest-btn" onclick="clickQuanta(event)">
+                <canvas id="harvestCanvas" width="64" height="64" style="image-rendering: pixelated; width: 80px; height: 80px; margin-bottom: 6px;"></canvas>
+                <span style="font-size: 0.85rem; font-weight: bold; color: var(--gold); text-shadow: 2px 2px 0 #000; letter-spacing: 1px;">HARVEST</span>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <button class="action-btn" onclick="ascend()" style="background: #dc2626; border-color: #fca5a5; width: 100%; padding: 8px; box-shadow: 0 3px 0 #991b1b;">ASCEND (LEGACY)</button>
+            <p style="font-size: 0.75rem; color: var(--text-dim); margin: 6px 0 0 0;">Legacy Shards: <span id="chips-display" style="color:var(--gold); font-weight:bold;">0</span> (+<span id="chips-pending">0</span>)</p>
+        </div>
+    </div>
+
+    <!-- MIDDLE COLUMN: Analytics, Minigames & Achievements -->
+    <div class="column" id="mid-col">
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('mid', 'stats-pane')">Analytics</button>
+            <button class="tab-btn" onclick="switchTab('mid', 'minigames-pane')">Flux Core</button>
+            <button class="tab-btn" onclick="switchTab('mid', 'achievements-pane')">Milestones</button>
+        </div>
+
+        <div id="stats-pane" class="tab-pane active">
+            <h3>Real-Time Analytics</h3>
+            <div id="stats-container"></div>
+        </div>
+
+        <div id="minigames-pane" class="tab-pane">
+            <h3>Matrix Resonance</h3>
+            <p style="font-size: 0.8rem; color: var(--text-dim);">Calibrate harmonic frequencies for temporary hyper-charged energy bursts.</p>
+            <div style="background: #06040d; border: 2px dashed var(--panel-border); padding: 20px; text-align: center; margin-top: 10px; border-radius: 4px;">
+                <div id="mg-status" style="font-size: 1rem; font-weight: bold; margin-bottom: 12px; color: #4ade80;">Matrix Calibrated</div>
+                <button class="action-btn" id="mg-btn" onclick="triggerOverclock()" style="padding: 10px 20px; font-size: 0.9rem;">Harmonic Surge</button>
+            </div>
+        </div>
+
+        <div id="achievements-pane" class="tab-pane">
+            <div id="achievements-container"></div>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Store (Buildings & Upgrades) -->
+    <div class="column" id="right-col">
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('right', 'buildings-pane')">Constructs</button>
+            <button class="tab-btn" onclick="switchTab('right', 'upgrades-pane')">Upgrades</button>
+        </div>
+
+        <div id="buildings-pane" class="tab-pane active">
+            <div id="buildings-container"></div>
+        </div>
+
+        <div id="upgrades-pane" class="tab-pane">
+            <div style="margin-bottom: 6px; font-size: 0.75rem; color: var(--text-dim);">Available Technology:</div>
+            <div id="upgrades-container"></div>
+        </div>
+    </div>
+
+    <!-- MANUAL MODAL OVERLAY -->
+    <div id="guide-modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 1.1rem;">Aether Operations Manual</h2>
+                <button class="action-btn" onclick="toggleGuide()" style="background: #dc2626; border-color:#fca5a5; padding: 2px 8px;">X</button>
+            </div>
+            <hr style="border-color: var(--panel-border); margin: 10px 0;">
+            <h3 style="font-size: 0.9rem; color: var(--neon-pink);">📖 Directions</h3>
+            <p class="guide-text">1. <b>Harvest:</b> Click the main core to gather Aether Quanta.</p>
+            <p class="guide-text">2. <b>Constructs:</b> Buy structures to build up automated output (CPS).</p>
+            <p class="guide-text">3. <b>Unlocking:</b> Keep earning Quanta to discover higher building tiers!</p>
+            <p class="guide-text">4. <b>Ascension:</b> Reset late game to gain massive permanent Legacy boosts.</p>
+
+            <h3 style="font-size: 0.9rem; color: var(--gold); margin-top: 15px;">📊 Quantum Lexicon</h3>
+            <p class="guide-text"><b>k</b> = Thousand (1,000)</p>
+            <p class="guide-text"><b>M</b> = Million ($10^6$)</p>
+            <p class="guide-text"><b>B</b> = Billion ($10^9$)</p>
+            <p class="guide-text"><b>T</b> = Trillion ($10^{12}$)</p>
+            <p class="guide-text"><b>Qa</b> = Quadrillion ($10^{15}$)</p>
+            <p class="guide-text"><b>Qi</b> = Quintillion ($10^{18}$)</p>
+            <p class="guide-text"><b>Sx</b> = Sextillion ($10^{21}$)</p>
+            <p class="guide-text"><b>Sp</b> = Septillion ($10^{24}$)</p>
+            <p class="guide-text"><b>Oc</b> = Octillion ($10^{27}$)</p>
+            <p class="guide-text"><b>No</b> = Nonillion ($10^{30}$)</p>
+            <p class="guide-text"><b>Dc</b> = Decillion ($10^{33}$)</p>
+        </div>
+    </div>
+
+    <script>
+        let game = {
+            realmName: "Celestial Realm",
+            quanta: 0,
+            totalEarned: 0,
+            totalClicks: 0,
+            timePlayed: 0,
+            cps: 0,
+            cpc: 1,
+            chips: 0,
+            buildings: [],
+            upgrades: [],
+            achievements: []
+        };
+
+        function formatNumber(num) {
+            if (num < 1000) return num.toFixed(num % 1 === 0 ? 0 : 1);
+            const suffixes = ["", "k", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+            let i = Math.floor(Math.log10(num) / 3);
+            if (i >= suffixes.length) return num.toExponential(2).replace('e+', 'E');
+            let val = num / Math.pow(10, i * 3);
+            return `${val.toFixed(2)} ${suffixes[i]}`;
+        }
+
+        // Themed Pixel Art Generator for High-Res 32x32 Canvas Icons
+        function drawThemedSprite(canvasId, index) {
+            let canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            let ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, 32, 32);
+
+            let themeId = Math.floor(index / 5) % 8; 
+            // Themes: 0: Stars, 1: Planets, 2: Void Entities, 3: Galactic Engines, 
+            // 4: Cosmic Artifacts, 5: Temporal Rifts, 6: Quantum Arrays, 7: Singularity Beacons
+
+            let palettes = [
+                ['#fde047', '#f97316', '#ffffff'], // Stars
+                ['#38bdf8', '#34d399', '#1e293b'], // Planets
+                ['#c084fc', '#4c1d95', '#0f172a'], // Void
+                ['#fb7185', '#e11d48', '#fecdd3'], // Engines
+                ['#a7f3d0', '#059669', '#ecfdf5'], // Artifacts
+                ['#818cf8', '#312e81', '#c7d2fe'], // Rifts
+                ['#38bdf8', '#0284c7', '#e0f2fe'], // Quantum
+                ['#f472b6', '#831843', '#fdf2f8']  // Singularity
+            ];
+
+            let pal = palettes[themeId];
+
+            for (let x = 0; x < 32; x++) {
+                for (let y = 0; y < 32; y++) {
+                    let dx = x - 15.5;
+                    let dy = y - 15.5;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    let hash = Math.sin(index * 123 + x * 17 + y * 41) * 10000;
+                    hash = hash - Math.floor(hash);
+
+                    if (themeId === 0) { // Stars (Cross/Sparkle pattern)
+                        if ((dist < 12 && hash > 0.3) || (Math.abs(dx) < 2 && Math.abs(dy) < 14) || (Math.abs(dy) < 2 && Math.abs(dx) < 14)) {
+                            ctx.fillStyle = dist < 5 ? pal[2] : (hash > 0.6 ? pal[0] : pal[1]);
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    } else if (themeId === 1) { // Planets (Orb with ring)
+                        if (dist < 10) {
+                            ctx.fillStyle = hash > 0.5 ? pal[0] : pal[1];
+                            ctx.fillRect(x, y, 1, 1);
+                        } else if (Math.abs(dy + dx*0.4) < 2 && Math.abs(dx) < 14) {
+                            ctx.fillStyle = pal[2];
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    } else { // Generic Cosmic Geometric Forms
+                        if (dist < 13 && hash > 0.35) {
+                            ctx.fillStyle = (x + y) % 2 === 0 ? pal[0] : (hash > 0.7 ? pal[2] : pal[1]);
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('load', () => {
+            let harvestCanvas = document.getElementById('harvestCanvas');
+            let hCtx = harvestCanvas.getContext('2d');
+            hCtx.imageSmoothingEnabled = false;
+            for(let x=0; x<64; x++) {
+                for(let y=0; y<64; y++) {
+                    let dx = x - 31.5;
+                    let dy = y - 31.5;
+                    if (Math.sqrt(dx*dx + dy*dy) < 28) {
+                        hCtx.fillStyle = (x+y)%2===0 ? '#fde047' : '#ec4899';
+                        hCtx.fillRect(x, y, 1, 1);
+                    }
+                }
+            }
+        });
+
+        const buildingNames = [
+            "Starlight Collector", "Solar Filament", "Nebula Spark", "Nova Harvester", "Astral Beacon",
+            "Terrene Drill", "Gas Giant Siphon", "Ring Matrix", "Crater Press", "Orbital Rig",
+            "Void Siphon", "Dark Matter Well", "Shadow Weaver", "Null Catalyst", "Abyssal Core",
+            "Plasma Foundry", "Thermal Engine", "Fusion Spindle", "Hyper-Dynamo", "Core Igniter",
+            "Prismatic Lens", "Crystal Relay", "Aether Chisel", "Relic Vault", "Runic Spire",
+            "Chrono Gear", "Temporal Loom", "Warp Anchor", "Paradox Rig", "Eternity Fold",
+            "Quark Splitter", "Flux Capacitor", "Entangled Array", "Subatomic Weaver", "Matrix Core",
+            "Event Horizon", "Black Hole Harness", "Singularity Pump", "Cosmic Weaver", "Omni Engine",
+            "Dimension Gate", "Multiverse Bridge", "Alpha Generator", "Omega Reactor", "Genesis Chamber",
+            "Infinity Loop", "Tachyon Forge", "God Particle Loom", "Aether Prime", "The Core Source"
+        ];
+
+        // Initialize 50 Buildings with Spaced Costs and Unlock Conditions
+        for (let i = 0; i < 50; i++) {
+            let baseCost = Math.floor(15 * Math.pow(4.2, i / 1.15));
+            let baseCps = Math.floor(1 * Math.pow(2.6, i));
+            game.buildings.push({
+                id: i,
+                name: buildingNames[i],
+                cost: baseCost,
+                baseCost: baseCost,
+                cps: baseCps,
+                owned: 0,
+                unlockEarnedReq: Math.floor(baseCost * 0.4) // Progressive discovery requirement
+            });
+        }
+
+        // Initialize Upgrades
+        for (let i = 0; i < 5000; i++) {
+            let targetBuilding = i % 50;
+            let tier = Math.floor(i / 50) + 1;
+            let rawCost = Math.floor(100 * Math.pow(1.35, i / 20));
+            game.upgrades.push({
+                id: i,
+                name: `${game.buildings[targetBuilding].name} v${tier}`,
+                cost: rawCost,
+                target: targetBuilding,
+                bought: false,
+                unlocked: false
+            });
+        }
+
+        // Achievements
+        for (let i = 0; i < 50; i++) {
+            game.achievements.push({
+                id: i,
+                name: `Milestone Tier ${i + 1}`,
+                desc: `Reach total yield threshold #${i + 1}.`,
+                target: Math.floor(1000 * Math.pow(4.8, i)),
+                unlocked: false
+            });
+        }
+
+        function renameRealm() {
+            let newName = prompt("Enter your new Realm Name:", game.realmName);
+            if (newName && newName.trim() !== "") {
+                game.realmName = newName.trim();
+                document.getElementById('realm-name').innerText = game.realmName;
+            }
+        }
+
+        function toggleGuide() {
+            let modal = document.getElementById('guide-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function clickQuanta(event) {
+            let gain = game.cpc * (1 + game.chips * 0.05);
+            game.quanta += gain;
+            game.totalEarned += gain;
+            game.totalClicks++;
+
+            if (event) {
+                let floatEl = document.createElement('div');
+                floatEl.className = 'click-float';
+                floatEl.innerText = `+${formatNumber(gain)}`;
+                floatEl.style.left = `${event.clientX - 15}px`;
+                floatEl.style.top = `${event.clientY - 15}px`;
+                document.body.appendChild(floatEl);
+                setTimeout(() => floatEl.remove(), 600);
+            }
+            updateDisplay();
+            renderBuildings();
+        }
+
+        function buyBuilding(id) {
+            let b = game.buildings[id];
+            if (game.quanta >= b.cost) {
+                game.quanta -= b.cost;
+                b.owned++;
+                b.cost = Math.floor(b.baseCost * Math.pow(1.15, b.owned));
+                
+                game.upgrades.forEach(u => {
+                    if (u.target === id && b.owned >= (Math.floor(u.id / 50) * 5 + 1)) {
+                        u.unlocked = true;
+                    }
+                });
+
+                recalculateCPS();
+                renderBuildings();
+                renderUpgrades();
+            }
+        }
+
+        function buyUpgrade(id) {
+            let u = game.upgrades[id];
+            if (!u.bought && game.quanta >= u.cost) {
+                game.quanta -= u.cost;
+                u.bought = true;
+                recalculateCPS();
+                renderUpgrades();
+            }
+        }
+
+        function recalculateCPS() {
+            let totalCPS = 0;
+            game.buildings.forEach(b => {
+                let buildingUpgrades = game.upgrades.filter(u => u.target === b.id && u.bought);
+                let mult = 1;
+                buildingUpgrades.forEach(() => mult *= 1.25);
+                totalCPS += (b.cps * b.owned * mult);
+            });
+            game.cps = totalCPS * (1 + game.chips * 0.05);
+        }
+
+        function ascend() {
+            let pendingChips = Math.floor(Math.sqrt(game.totalEarned / 1e15));
+            if (pendingChips > 0) {
+                game.chips += pendingChips;
+                game.quanta = 0;
+                game.totalEarned = 0;
+                game.cps = 0;
+                game.buildings.forEach(b => { b.owned = 0; b.cost = b.baseCost; });
+                game.upgrades.forEach(u => { u.bought = false; u.unlocked = false; });
+                alert(`Ascended successfully! Claimed ${pendingChips} Legacy Shards.`);
+                recalculateCPS();
+                renderBuildings();
+                renderUpgrades();
+            } else {
+                alert("More progress required before ascension.");
+            }
+        }
+
+        let mgActive = false;
+        function triggerOverclock() {
+            if (!mgActive) {
+                mgActive = true;
+                document.getElementById('mg-status').innerText = "SURGE ACTIVE!";
+                document.getElementById('mg-btn').innerText = "Cooling...";
+                game.quanta += Math.max(500, game.cps * 60);
+                setTimeout(() => {
+                    mgActive = false;
+                    document.getElementById('mg-status').innerText = "Matrix Calibrated";
+                    document.getElementById('mg-btn').innerText = "Harmonic Surge";
+                }, 15000);
+            }
+        }
+
+        function switchTab(column, paneId) {
+            let col = document.getElementById(column === 'mid' ? 'mid-col' : 'right-col');
+            col.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            col.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(paneId).classList.add('active');
+            event.target.classList.add('active');
+            if (paneId === 'stats-pane') renderStats();
+        }
+
+        function renderBuildings() {
+            let container = document.getElementById('buildings-container');
+            container.innerHTML = '';
+            game.buildings.forEach(b => {
+                let isUnlocked = game.totalEarned >= b.unlockEarnedReq || b.owned > 0;
+                if (isUnlocked) {
+                    container.innerHTML += `
+                        <div class="item-card">
+                            <div style="display:flex; align-items:center;">
+                                <canvas id="b_icon_${b.id}" class="pixel-icon" width="32" height="32"></canvas>
+                                <div>
+                                    <strong style="color:var(--gold); font-size:0.85rem;">${b.name}</strong> <span style="color:var(--neon-blue);">[${b.owned}]</span><br>
+                                    <small style="color:var(--text-dim); font-size:0.75rem;">Cost: ${formatNumber(b.cost)} | +${formatNumber(b.cps)} CPS</small>
+                                </div>
+                            </div>
+                            <button class="action-btn" onclick="buyBuilding(${b.id})" ${game.quanta < b.cost ? 'disabled' : ''}>Buy</button>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML += `
+                        <div class="item-card locked">
+                            <div style="display:flex; align-items:center;">
+                                <div class="pixel-icon" style="display:flex; align-items:center; justify-content:center; color:var(--text-dim);">?</div>
+                                <div>
+                                    <strong style="color:var(--text-dim); font-size:0.85rem;">??? Locked ???</strong><br>
+                                    <small style="color:var(--text-dim); font-size:0.75rem;">Earn more Quanta to discover</small>
+                                </div>
+                            </div>
+                            <button class="action-btn" disabled>Locked</button>
+                        </div>
+                    `;
+                }
+            });
+
+            // Draw custom themed pixel sprite for unlocked buildings
+            game.buildings.forEach(b => {
+                if (game.totalEarned >= b.unlockEarnedReq || b.owned > 0) {
+                    drawThemedSprite(`b_icon_${b.id}`, b.id);
+                }
+            });
+        }
+
+        function renderUpgrades() {
+            let container = document.getElementById('upgrades-container');
+            container.innerHTML = '';
+            let count = 0;
+            for (let u of game.upgrades) {
+                if (u.unlocked && !u.bought) {
+                    container.innerHTML += `
+                        <div class="item-card">
+                            <div>
+                                <strong style="font-size:0.8rem; color:var(--text-main);">${u.name}</strong><br>
+                                <small style="color:var(--text-dim); font-size:0.7rem;">Cost: ${formatNumber(u.cost)}</small>
+                            </div>
+                            <button class="action-btn" onclick="buyUpgrade(${u.id})" ${game.quanta < u.cost ? 'disabled' : ''}>Unlock</button>
+                        </div>
+                    `;
+                    count++;
+                    if (count > 25) break;
+                }
+            }
+        }
+
+        function renderAchievements() {
+            let container = document.getElementById('achievements-container');
+            container.innerHTML = '';
+            game.achievements.forEach(a => {
+                container.innerHTML += `
+                    <div class="item-card" style="opacity: ${a.unlocked ? 1 : 0.4}">
+                        <div>
+                            <strong style="font-size:0.8rem;">${a.name}</strong><br>
+                            <small style="color:var(--text-dim); font-size:0.7rem;">${a.desc}</small>
+                        </div>
+                        <div>${a.unlocked ? '✅' : '🔒'}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderStats() {
+            let container = document.getElementById('stats-container');
+            let days = Math.floor(game.timePlayed / 86400);
+            let hours = Math.floor((game.timePlayed % 86400) / 3600);
+            let minutes = Math.floor((game.timePlayed % 3600) / 60);
+            let seconds = Math.floor(game.timePlayed % 60);
+
+            let totalBuildingsOwned = game.buildings.reduce((sum, b) => sum + b.owned, 0);
+
+            container.innerHTML = `
+                <div class="stat-row"><span class="stat-label">Playtime:</span> <span class="stat-value">${days}d ${hours}h ${minutes}m ${seconds}s</span></div>
+                <div class="stat-row"><span class="stat-label">Total Harvested:</span> <span class="stat-value">${formatNumber(game.totalEarned)}</span></div>
+                <div class="stat-row"><span class="stat-label">Total Clicks:</span> <span class="stat-value">${game.totalClicks.toLocaleString()}</span></div>
+                <div class="stat-row"><span class="stat-label">Buildings Owned:</span> <span class="stat-value">${totalBuildingsOwned.toLocaleString()}</span></div>
+            `;
+        }
+
+        // Game loop (20 ticks/sec)
+        setInterval(() => {
+            game.quanta += (game.cps / 20);
+            game.totalEarned += (game.cps / 20);
+            game.timePlayed += 0.05;
+
+            game.achievements.forEach(a => {
+                if (!a.unlocked && game.totalEarned >= a.target) {
+                    a.unlocked = true;
+                    renderAchievements();
+                }
+            });
+
+            updateDisplay();
+
+            if (Math.floor(game.timePlayed * 20) % 20 === 0) {
+                let statsPane = document.getElementById('stats-pane');
+                if (statsPane && statsPane.classList.contains('active')) {
+                    renderStats();
+                }
+            }
+        }, 50);
+
+        function updateDisplay() {
+            document.getElementById('quanta-display').innerText = formatNumber(game.quanta);
+            document.getElementById('cps-display').innerText = `CPS: ${formatNumber(game.cps)}`;
+            document.getElementById('chips-display').innerText = game.chips;
+            document.getElementById('chips-pending').innerText = formatNumber(Math.floor(Math.sqrt(game.totalEarned / 1e15)));
+        }
+
+        // Initial Load
+        document.getElementById('realm-name').innerText = game.realmName;
+        renderBuildings();
+        renderUpgrades();
+        renderAchievements();
+    </script>
+</body>
+</html>
